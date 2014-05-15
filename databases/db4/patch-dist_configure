@@ -1,0 +1,78 @@
+$NetBSD$
+
+--- dist/configure.orig	2014-05-15 02:29:51.255066112 +0000
++++ dist/configure
+@@ -7343,6 +7343,10 @@ gnu*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
++haiku*)
++  lt_cv_deplibs_check_method=pass_all
++  ;;
++
+ hpux10.20* | hpux11*)
+   lt_cv_file_magic_cmd=/usr/bin/file
+   case $host_cpu in
+@@ -10131,6 +10135,12 @@ $as_echo_n "checking for $compiler optio
+       lt_prog_compiler_pic='-fno-common'
+       ;;
+ 
++    haiku*)
++      # PIC is the default for Haiku.
++      # The "-static" flag exists, but is broken.
++      lt_prog_compiler_static=
++      ;;
++    
+     hpux*)
+       # PIC is the default for 64-bit PA HP-UX, but not for 32-bit
+       # PA HP-UX.  On IA64 HP-UX, PIC is the default but the pic flag
+@@ -11977,6 +11987,18 @@ beos*)
+   shlibpath_var=LIBRARY_PATH
+   ;;
+ 
++haiku*)
++  version_type=linux
++  need_lib_prefix=no
++  need_version=no
++  dynamic_linker="$host_os runtime_loader"
++  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
++  soname_spec='${libname}${release}${shared_ext}$major'
++  shlibpath_overrides_runpath=yes
++  sys_lib_dlsearch_path_spec='/boot/system/lib'
++  hardcode_into_libs=yes
++  ;;
++
+ bsdi[45]*)
+   version_type=linux
+   need_version=no
+@@ -14666,6 +14688,11 @@ $as_echo_n "checking for $compiler optio
+       # Common symbols not allowed in MH_DYLIB files
+       lt_prog_compiler_pic_CXX='-fno-common'
+       ;;
++    haiku*)
++      # PIC is the default for Haiku.
++      # The "-static" flag exists, but is broken.
++      lt_prog_compiler_static=
++      ;;
+     *djgpp*)
+       # DJGPP does not support shared libraries at all
+       lt_prog_compiler_pic_CXX=
+@@ -15588,6 +15615,18 @@ gnu*)
+   hardcode_into_libs=yes
+   ;;
+ 
++haiku*)
++  version_type=linux
++  need_lib_prefix=no
++  need_version=no
++  dynamic_linker="$host_os runtime_loader"
++  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
++  soname_spec='${libname}${release}${shared_ext}$major'
++  shlibpath_overrides_runpath=yes
++  sys_lib_dlsearch_path_spec='/boot/system/lib'
++  hardcode_into_libs=yes
++  ;;
++
+ hpux9* | hpux10* | hpux11*)
+   # Give a soname corresponding to the major version so that dld.sl refuses to
+   # link against other versions.
