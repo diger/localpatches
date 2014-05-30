@@ -1,7 +1,7 @@
 $NetBSD$
 
---- include/db.h.orig	2014-05-21 04:09:02.000000000 +0000
-+++ include/db.h
+--- plugins/kdb/db2/libdb2/include/db.hin.orig	2014-05-30 07:59:03.809500672 +0000
++++ plugins/kdb/db2/libdb2/include/db.hin
 @@ -40,6 +40,10 @@
  
  #include <sys/types.h>
