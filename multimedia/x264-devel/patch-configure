@@ -1,0 +1,14 @@
+$NetBSD$
+
+--- configure.orig	2014-06-08 17:00:19.050593792 +0000
++++ configure
+@@ -465,6 +465,9 @@ case $host_os in
+         SYS="BEOS"
+         define HAVE_MALLOC_H
+         ;;
++    haiku*)
++        SYS="HAIKU"
++        ;;
+     darwin*)
+         SYS="MACOSX"
+         CFLAGS="$CFLAGS"
