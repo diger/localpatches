@@ -1,5 +1,7 @@
 case "${STAGE}" in POST-INSTALL)
 	HFONTDIR="`finddir B_USER_NONPACKAGED_FONTS_DIRECTORY`/ttf"
+	IFS="
+	"
 	echo "===> Create symlinks for fonts to $HFONTDIR"
 	${PKG_INFO} -L ${PKGNAME} | grep 'fonts/X11/TTF' | ( \
 	while read name;	\

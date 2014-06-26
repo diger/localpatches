@@ -1,5 +1,7 @@
 case "${STAGE}" in DEINSTALL)
 	HFONTDIR="`finddir B_USER_NONPACKAGED_FONTS_DIRECTORY`/ttf"
+	IFS="
+	"
 	LINKNAME="`${PKG_INFO} -L ${PKGNAME} | grep "fonts/X11/TTF"|awk -F/ '{print $NF}'`"
 	echo "===> Remove symlink from $HFONTDIR"
 	${PKG_INFO} -L ${PKGNAME} | grep 'fonts/X11/TTF' |awk -F/ '{print $NF}' | ( \
