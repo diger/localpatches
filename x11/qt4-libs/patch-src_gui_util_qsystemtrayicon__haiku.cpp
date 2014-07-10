@@ -1,8 +1,8 @@
 $NetBSD$
 
---- src/gui/util/qsystemtrayicon_haiku.cpp.orig	2014-07-03 10:34:03.306184192 +0000
+--- src/gui/util/qsystemtrayicon_haiku.cpp.orig	2014-07-04 02:48:20.291766272 +0000
 +++ src/gui/util/qsystemtrayicon_haiku.cpp
-@@ -0,0 +1,503 @@
+@@ -0,0 +1,463 @@
 +/****************************************************************************
 +**
 +** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
@@ -74,6 +74,9 @@ $NetBSD$
 +#include <string.h>
 +#include <stdio.h>
 +
++#define TRAY_MOUSEDOWN 	1
++#define TRAY_MOUSEUP	2
++
 +enum notify_mode {
 +		NM_NONE,
 +		NM_QT,
@@ -82,188 +85,151 @@ $NetBSD$
 +
 +#define maxTipLength 	128
 +
-+#define REPL_NAME		"QtTrayItem"
 +#define DBAR_SIGNATURE 	"application/x-vnd.Be-TSKB"
 +
 +static 	notify_mode notifyMode = NM_NATIVE;
 +
-+DeskbarView::DeskbarView(team_id tid) : BView(BRect(0,0,15,15), REPL_NAME,B_FOLLOW_NONE,B_WILL_DRAW)
++QSystemTrayIconLooper::QSystemTrayIconLooper() : QObject(), BLooper("traylooper")
++{	
++}
++
++thread_id 
++QSystemTrayIconLooper::Run(void)
 +{
-+	id = -1;
-+	team = tid;
-+	ticks = 0;
-+	icon = NULL;
-+	traysysobject = NULL;
-+	lastButtons = 0;
++	thread_id Thread = BLooper::Run();	
++	return Thread;
 +}
 +
-+DeskbarView::DeskbarView(BMessage *message) : BView(message)
++void 
++QSystemTrayIconLooper::MessageReceived(BMessage* theMessage)
 +{
-+	const void* data;
-+	ssize_t numBytes;
-+	message->FindData("color",B_ANY_TYPE,&data,&numBytes);	
-+	color = *((rgb_color*)data);
-+	message->FindData("team",B_ANY_TYPE,&data,&numBytes);
-+	team = *((team_id*)data);
-+	id = -1;
-+	ticks = 0;
-+	icon = NULL;
-+	traysysobject = NULL;	
-+	lastButtons = 0;
-+}
++	if( theMessage->what == 'TRAY' || 
++		theMessage->what == 'PULS' || 
++		theMessage->what == 'LIVE') {
++		BMessage *mes = new BMessage(*theMessage);
++		emit sendHaikuMessage(mes);
++	}
++	BLooper::MessageReceived(theMessage);
++} 
 +
-+DeskbarView *DeskbarView::Instantiate(BMessage *data) {
-+	if (!validate_instantiation(data, REPL_NAME)) return NULL;
-+	return new DeskbarView(data);
-+}
-+
-+status_t DeskbarView::Archive(BMessage *data, bool deep) const {
-+	BView::Archive(data, deep);
-+	data->AddString("add_on", DBAR_SIGNATURE);
-+	data->AddString("class", REPL_NAME);
++QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
++    : ReplicantId(0), q(object), ignoreNextMouseRelease(false), LiveFactor(0)
++{
++	Looper = new QSystemTrayIconLooper();
++	Looper->Run();		
 +	
-+	data->AddData("color",B_ANY_TYPE,&color,sizeof(rgb_color));
-+	data->AddData("team",B_ANY_TYPE,&team,sizeof(team_id));
-+	return B_OK;
-+}		
-+
-+void DeskbarView::AttachedToWindow()
-+{
-+	ticks = 0;	
-+	BMessage* tickMsg = new BMessage('LIVE');
-+	BMessageRunner *runner = new BMessageRunner( this, tickMsg, 1000000 );
-+	color = Parent()->ViewColor();	
-+	BView::AttachedToWindow();
++	pulse = new BMessageRunner(BMessenger(NULL, Looper),new BMessage('PULS'),1000000);
++		
++	InstallIcon();
++	
++	QObject::connect(Looper,SIGNAL(sendHaikuMessage(BMessage *)),this,SLOT(HaikuEvent(BMessage *)),Qt::QueuedConnection);
 +}
 +
-+void DeskbarView::Draw(BRect r)
++QSystemTrayIconSys::~QSystemTrayIconSys()
 +{
-+	SetDrawingMode(B_OP_COPY);
-+	SetHighColor(Parent()->ViewColor());
-+	FillRect(Bounds());
-+	if(ticks>3 && !icon) {
-+		SetHighColor(32,32,32,100);			
-+		SetDrawingMode(B_OP_ALPHA);
-+		DrawChar('?',BPoint(4,12));
++	BDeskbar deskbar;
++	if(ReplicantId>0)
++		deskbar.RemoveItem(ReplicantId);
++	if(pulse)
++		delete pulse;	
++	if(Looper->Lock())
++		Looper->Quit();
++}
++
++void
++QSystemTrayIconSys::InstallIcon(void)
++{
++	ReplicantId = DeskBarLoadIcon();
++
++	QString appName = QFileInfo(QApplication::applicationFilePath()).fileName();
++	BString app_name((const char *)(appName.toUtf8()));
++
++	BMessage mes('MSGR');
++	QSystemTrayIconSys *sys=this;
++	mes.AddMessenger("messenger",BMessenger(NULL,Looper));
++	mes.AddData("qtrayobject",B_ANY_TYPE,&sys,sizeof(void*));
++	mes.AddString( "application_name",app_name);
++
++	SendMessageToReplicant(&mes);
++}
++
++void QSystemTrayIconSys::HaikuEvent(BMessage *m)
++{	
++	if(m->what == 'PULS') {
++		LiveFactor--;
++		if(LiveFactor<-5) {		//Reinstallation time
++			LiveFactor = 0;
++			ReplicantId = 0;
++			InstallIcon();
++			LiveFactor = 0;
++			UpdateIcon();
++			UpdateTooltip();
++		}		
 +	}
-+	if(icon) {
-+		float dx = (Bounds().Width() - icon->Bounds().Width())/2;
-+		float dy = (Bounds().Height() - icon->Bounds().Height())/2;
-+		SetDrawingMode(B_OP_ALPHA);		
-+		DrawBitmap(icon,BPoint(dx,dy));
++	if(m->what == 'LIVE') {
++		LiveFactor++;		
++		BRect rect;
++		if(m->FindRect("rect",&rect)==B_OK) {
++			shelfRect.setRect(rect.left, rect.top, rect.Width(), rect.Height());
++		}		
 +	}
-+}
-+
-+void DeskbarView::MouseMoved(BPoint point, uint32 transit,const BMessage *message)
-+{
-+}
-+
-+void DeskbarView::MouseUp(BPoint point)
-+{
-+   uint32 buttons = lastButtons;
-+   
-+   BMessage *mes = new BMessage('TRAY');
-+   mes->AddInt32("event",TRAY_MOUSEUP);
-+   mes->AddPoint("point",ConvertToScreen(point));
-+   mes->AddInt32("buttons",buttons);
-+   mes->AddInt32("clicks",1);
-+   mes->AddData("qtrayobject",B_ANY_TYPE,&traysysobject,sizeof(void*));
-+   ReplyMessenger.SendMessage(mes);
-+   
-+}
-+
-+void DeskbarView::MouseDown(BPoint point)
-+{
-+   uint32 buttons = Window()->CurrentMessage()->FindInt32("buttons");
-+   int32 clicks = Window()->CurrentMessage()->FindInt32("clicks");
-+   lastButtons = buttons;
-+   
-+   BMessage *mes = new BMessage('TRAY');
-+   mes->AddInt32("event",TRAY_MOUSEDOWN);
-+   mes->AddPoint("point",ConvertToScreen(point));
-+   mes->AddInt32("buttons",buttons);
-+   mes->AddInt32("clicks",clicks);
-+   mes->AddData("qtrayobject",B_ANY_TYPE,&traysysobject,sizeof(void*));
-+   ReplyMessenger.SendMessage(mes);
-+   
-+}
-+
-+void DeskbarView::MessageReceived(BMessage *message) {
-+//	message->PrintToStream();
-+	switch (message->what)
-+	{
-+		case 'LIVE':
-+			{
-+				ticks++;				
-+				Invalidate();
-+				team_info teamInfo;
-+				status_t error = get_team_info(team, &teamInfo);
-+				if (error != B_OK && id>0) {
-+					BDeskbar deskbar;
-+					deskbar.RemoveItem(id);
-+				} else {
-+					BMessage *mes=new BMessage(*message);
-+					mes->AddRect("rect",ConvertToScreen(Bounds()));
-+					ReplyMessenger.SendMessage(mes);
++	if(m->what == 'TRAY') {
++		int32 event = 0;
++		BPoint point(0,0);
++		int32 buttons = 0,
++			  clicks = 0;
++	
++		m->FindInt32("event",&event);
++		m->FindPoint("point",&point);
++		m->FindInt32("buttons",&buttons);
++		m->FindInt32("clicks",&clicks);
++		
++		switch(event) {
++			case TRAY_MOUSEUP:
++				{				                
++					if(buttons==B_PRIMARY_MOUSE_BUTTON) {
++					if (ignoreNextMouseRelease)
++	                    ignoreNextMouseRelease = false;
++	                else
++	                    emit q->activated(QSystemTrayIcon::Trigger);
++						break;
++					}
++					if(buttons==B_TERTIARY_MOUSE_BUTTON) {
++						emit q->activated(QSystemTrayIcon::MiddleClick);
++						break;
++					}
++					if(buttons==B_SECONDARY_MOUSE_BUTTON) {
++						QPoint gpos = QPoint(point.x,point.y);
++		                if (q->contextMenu()) {
++		                    q->contextMenu()->popup(gpos);
++		
++							BScreen screen(NULL);
++		                    QRect desktopRect( screen.Frame().left, screen.Frame().top,
++		                    				   screen.Frame().right, screen.Frame().bottom);
++		                    int maxY = desktopRect.y() + desktopRect.height() - q->contextMenu()->height();
++		                    if (gpos.y() > maxY) {
++		                        gpos.ry() = maxY;
++		                        q->contextMenu()->move(gpos);
++		                    }
++		                }
++		                emit q->activated(QSystemTrayIcon::Context);		
++		             	break;   			
++					}
 +				}
 +				break;
-+			}
-+		case B_SET_PROPERTY:
-+			{
-+				switch( message->FindInt32("what2") ) {
-+					case 'TTIP':
-+						{							
-+							const char *tip=NULL;
-+							status_t res = message->FindString("tooltip",&tip);
-+							
-+							if(!tip || res!=B_OK)
-+								tip = applicationName.String();
-+							if(strlen(tip)==0)
-+								tip = applicationName.String();													
-+							if(strlen(tip)!=0)		
-+								SetToolTip(tip);
-+								
-+							break;
-+						}					
-+					case 'BITS':
-+						{
-+							BBitmap *oldicon=icon;
-+							icon=NULL;
-+							delete oldicon;
-+							BMessage bits;
-+							message->FindMessage("icon", &bits);
-+							icon = new BBitmap(&bits);
-+							bits.MakeEmpty();
-+							Invalidate();
-+							break;
-+						}
-+					case '_ID_':
-+						{
-+							message->FindInt32("ReplicantID",&id);
-+							break;
-+						}
-+					case 'MSGR':
-+						{
-+							ssize_t numBytes;
-+							const char *name=NULL;
-+							message->FindMessenger("messenger", &ReplyMessenger);
-+							message->FindData("qtrayobject",B_ANY_TYPE,&traysysobject,&numBytes);
-+							if(message->FindString("application_name",&name)==B_OK)
-+								applicationName.SetTo(name);
-+							break;
-+						}
++			case TRAY_MOUSEDOWN:
++				{				
++					if(buttons==B_PRIMARY_MOUSE_BUTTON && clicks==2) {
++						ignoreNextMouseRelease = true;
++						emit q->activated(QSystemTrayIcon::DoubleClick);
++						break;
++					}
 +				}
-+			}
-+			break;		
-+		default:
-+			BView::MessageReceived(message);
-+			break;
++				break;
++			default:
++				break;
++		}
 +	}
-+}
-+
-+DeskbarView::~DeskbarView()
-+{
-+ 
 +}
 +
 +void QSystemTrayIconSys::UpdateTooltip()
@@ -307,7 +273,8 @@ $NetBSD$
 +	UpdateTooltip();
 +}
 +
-+BMessenger GetMessenger(void)
++BMessenger 
++QSystemTrayIconSys::GetShelfMessenger(void)
 +{
 +	BMessenger aResult;
 +	status_t aErr = B_OK;
@@ -323,13 +290,17 @@ $NetBSD$
 +	
 +	BMessage aReply;
 +
-+	if (aDeskbar.SendMessage(&aMessage, &aReply, 1000000, 1000000) == B_OK)
++	if (aDeskbar.SendMessage(&aMessage, &aReply, 500000, 500000) == B_OK)
 +		aReply.FindMessenger("result", &aResult);
 +	return aResult;
 +}
 +
-+status_t SendMessageToReplicant(int32 index, BMessage *msg)
++status_t 
++QSystemTrayIconSys::SendMessageToReplicant(BMessage *msg)
 +{
++	if(ReplicantId<=0)
++		return B_ERROR;
++		
 +	BMessage aReply;
 +	status_t aErr = B_OK;
 +	
@@ -339,11 +310,11 @@ $NetBSD$
 +	BMessage	uid_specifier(B_ID_SPECIFIER);
 +	
 +	msg->AddSpecifier("View");
-+	uid_specifier.AddInt32("id", index);
++	uid_specifier.AddInt32("id", ReplicantId);
 +	uid_specifier.AddString("property", "Replicant");
 +	msg->AddSpecifier(&uid_specifier);
 +		
-+	aErr = GetMessenger().SendMessage( msg, (BHandler*)NULL, 1000000 );
++	aErr = GetShelfMessenger().SendMessage( msg, (BHandler*)NULL, 500000 );
 +	return aErr;
 +}
 +
@@ -362,38 +333,27 @@ $NetBSD$
 +   return res;
 +}
 +
-+int32 LoadIcon(team_id tid)
++int32 
++QSystemTrayIconSys::DeskBarLoadIcon(team_id tid)
 +{
-+	BDeskbar deskbar;
-+	int32 id=-1;
-+
-+	deskbar.AddItem(new DeskbarView(tid),&id);
-+	
-+	if(id>0) {
-+		BMessage msg('_ID_');
-+		msg.AddInt32("ReplicantID",id);
-+		SendMessageToReplicant(id,&msg);
-+	}
-+	
-+	return id;	
++	char cmd[256];
++	sprintf(cmd,"qsystray %d",(int)tid);	
++	int32 id = ExecuteCommand(cmd);
++	return id;
 +}
 +
-+int32 LoadIcon(void)
++int32 
++QSystemTrayIconSys::DeskBarLoadIcon(void)
 +{
 +	thread_info threadInfo;
 +	status_t error = get_thread_info(find_thread(NULL), &threadInfo);
 +	if (error != B_OK) {
-+		return 0;
++		fprintf(stderr, "Failed to get info for the current thread: %s\n", strerror(error));
++		return -1;	
 +	}
 +	team_id sTeam = threadInfo.team;
 +	
-+	return LoadIcon(sTeam);
-+}
-+
-+void RemoveIcon(int32 id)
-+{
-+	BDeskbar deskbar;
-+	deskbar.RemoveItem(id);
++	return DeskBarLoadIcon(sTeam);
 +}
 +
 +void QSystemTrayIconPrivate::install_sys()
@@ -456,7 +416,7 @@ $NetBSD$
 +		notification.SetTitle(stitle);
 +		notification.SetMessageID(smessageId);
 +		notification.SetContent(smessage);
-+		notification.Send(timeOut/1000);
++		notification.Send(timeOut*1000);
 +	}
 +}
 +
@@ -493,7 +453,8 @@ $NetBSD$
 +}
 +
 +bool QSystemTrayIconPrivate::isSystemTrayAvailable_sys()
-+{	
++{
++	// We assume the qsystray executable will always be available
 +	return true;
 +}
 +
@@ -505,4 +466,3 @@ $NetBSD$
 +QT_END_NAMESPACE
 +
 +#endif // QT_NO_SYSTEMTRAYICON
-+

@@ -1,8 +1,8 @@
 $NetBSD$
 
---- src/gui/text/qfontdatabase_haiku.cpp.orig	2014-07-03 10:34:03.289931264 +0000
+--- src/gui/text/qfontdatabase_haiku.cpp.orig	2014-07-09 02:36:13.583532544 +0000
 +++ src/gui/text/qfontdatabase_haiku.cpp
-@@ -0,0 +1,373 @@
+@@ -0,0 +1,376 @@
 +#include "qfontdatabase.h"
 +#include <qabstractfileengine.h> //to get qfontdatabase.cpp compiling
 +#include "qfont_p.h"
@@ -55,8 +55,11 @@ $NetBSD$
 +    FT_Library lib = qt_getFreetype();
 +
 +	directory_which FontDirs[] = {
-+		B_BEOS_FONTS_DIRECTORY,
-+		B_USER_FONTS_DIRECTORY
++		B_SYSTEM_FONTS_DIRECTORY,
++		B_SYSTEM_NONPACKAGED_FONTS_DIRECTORY,
++		B_USER_FONTS_DIRECTORY,
++		B_USER_NONPACKAGED_FONTS_DIRECTORY,
++		B_BEOS_FONTS_DIRECTORY
 +	};
 +	
 +	
