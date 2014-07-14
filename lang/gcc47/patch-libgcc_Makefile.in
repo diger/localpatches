@@ -1,0 +1,25 @@
+$NetBSD$
+
+--- libgcc/Makefile.in.orig	2012-12-04 19:09:59.037748736 +0000
++++ libgcc/Makefile.in
+@@ -363,10 +363,16 @@ ifeq ($(enable_shared),yes)
+     install-libunwind = install-libunwind
+   endif
+ 
+-# For -fvisibility=hidden.  We need both a -fvisibility=hidden on
+-# the command line, and a #define to prevent libgcc2.h etc from
+-# overriding that with #pragmas.
+-vis_hide = @vis_hide@
++ifneq ($(enable_shared),yes)
++# Maintain the same visibility as older GCC for now. Needed on Haiku
++# because the static library is included in libroot.so.
++vis_hide =
++else
++ # For -fvisibility=hidden.  We need both a -fvisibility=hidden on
++ # the command line, and a #define to prevent libgcc2.h etc from
++ # overriding that with #pragmas.
++ vis_hide = @vis_hide@
++endif
+ 
+ ifneq (,$(vis_hide))
+ 

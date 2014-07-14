@@ -1,0 +1,12 @@
+$NetBSD$
+
+--- libcpp/configure.ac.orig	2013-04-03 15:43:55.038535168 +0000
++++ libcpp/configure.ac
+@@ -150,6 +150,7 @@ m4_changequote(,)
+ case $target in
+ 	alpha*-*-* | \
+ 	arm*-*-*eabi* | \
++	arm*-*-haiku* | \
+ 	arm*-*-rtems[.0-9]* | \
+ 	arm*-*-symbianelf* | \
+ 	x86_64-*-* | \
