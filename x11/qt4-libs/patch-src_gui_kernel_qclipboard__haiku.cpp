@@ -1,6 +1,6 @@
 $NetBSD$
 
---- src/gui/kernel/qclipboard_haiku.cpp.orig	2014-07-03 10:34:03.222560256 +0000
+--- src/gui/kernel/qclipboard_haiku.cpp.orig	2014-07-31 20:23:00.221773824 +0000
 +++ src/gui/kernel/qclipboard_haiku.cpp
 @@ -0,0 +1,105 @@
 +#include "qplatformdefs.h"
@@ -42,7 +42,7 @@ $NetBSD$
 +
 +				for ( int i = 0; msg->GetInfo(B_MIME_TYPE, i, &name, &type, &count) == B_OK; i++ ) {
 +					const void *data;
-+					int32 dataLen = 0;
++					ssize_t dataLen = 0;
 +					qDebug() << "mimeData " << name;
 +					status_t stat = msg->FindData(name,B_MIME_TYPE,&data,&dataLen);
 +					if(dataLen && stat==B_OK)	{
