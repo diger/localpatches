@@ -1,0 +1,25 @@
+$NetBSD$
+
+--- Makefile.haiku.orig	2014-09-18 08:42:17.682885120 +0000
++++ Makefile.haiku
+@@ -0,0 +1,20 @@
++CC = gcc
++
++# you may need -L/usr/pkg/lib for older NetBSD versions
++CFLAGS = -Wall -g -O2 -c -lnetwork -D_THREAD_SAFE -D_REENTRANT -DNOODBC -DWITH_STD_MALLOC -DFD_SETSIZE=4096 -DWITH_POLL
++COUT = -o 
++LN = gcc
++LDFLAGS = -Wall -O2 -lroot
++# -lpthreads may be reuqired on some platforms instead of -pthreads
++LIBS =
++LNOUT = -o 
++EXESUFFICS =
++OBJSUFFICS = .o
++DEFINEOPTION = -D
++COMPFILES = *~
++REMOVECOMMAND = rm -f
++TYPECOMMAND = cat
++COMPATLIBS =
++MAKEFILE = Makefile.unix
++
++include Makefile.inc
