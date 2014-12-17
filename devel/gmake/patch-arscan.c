@@ -6,8 +6,8 @@ $NetBSD$
  #endif
  
  #ifndef WINDOWS32
--# ifndef __BEOS__
-+# if !defined (__BEOS__) && !defined (__HAIKU__)
+-# if !defined (__ANDROID__) && !defined (__BEOS__)
++# if # if !defined (__ANDROID__) && !defined (__BEOS__) && !defined (__HAIKU__)
  #  include <ar.h>
  # else
     /* BeOS 5 doesn't have <ar.h> but has archives in the same format
