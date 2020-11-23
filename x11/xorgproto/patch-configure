@@ -1,0 +1,34 @@
+--- configure.orig	2020-04-14 15:29:27.788004864 +0000
++++ configure	2020-11-22 16:43:46.058458112 +0000
+@@ -11412,6 +11412,31 @@
+ esac
+ 
+ if test "x$fds_bits_found" = xfalse ; then
++   ac_fn_c_check_member "$LINENO" "fd_set" "bits" "ac_cv_member_fd_set_bits" "
++                               #ifdef HAVE_SYS_PARAM_H
++                               #include <sys/param.h>
++                               #endif
++                               #ifdef HAVE_SYS_TYPES_H
++                               #include <sys/types.h>
++                               #endif
++                               #ifdef HAVE_SYS_TIME_H
++                               #include <sys/time.h>
++                               #endif
++                               #ifdef HAVE_SYS_SELECT_H
++                              #include <sys/select.h>
++                               #endif
++
++"
++if test "x$ac_cv_member_fd_set_bits" = xyes; then :
++
++                              fds_bits_found=plain_simple
++                              USE_FDS_BITS="bits"
++
++fi
++
++fi
++
++if test "x$fds_bits_found" = xfalse ; then
+    ac_fn_c_check_member "$LINENO" "fd_set" "fds_bits" "ac_cv_member_fd_set_fds_bits" "
+                                #ifdef HAVE_SYS_PARAM_H
+                                #include <sys/param.h>
