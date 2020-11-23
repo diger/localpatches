@@ -1,15 +1,17 @@
-$NetBSD$
+$NetBSD: patch-include_c.h,v 1.1 2018/01/02 10:24:06 jperkin Exp $
 
---- include/c.h.orig	2014-06-02 08:30:46.595591168 +0000
+Add NAME_MAX compat.
+
+--- include/c.h.orig	2020-11-23 09:03:22.788004864 +0000
 +++ include/c.h
-@@ -235,6 +235,10 @@ static inline int dirfd(DIR *d)
- #define IUTF8 0040000
+@@ -33,6 +33,10 @@
+ # define NAME_MAX PATH_MAX
  #endif
  
 +#ifndef _SC_HOST_NAME_MAX
-+#define _SC_HOST_NAME_MAX _POSIX_HOST_NAME_MAX
++#define _SC_HOST_NAME_MAX 72
 +#endif
 +
  /*
-  * MAXHOSTNAMELEN replacement
+  * Compiler-specific stuff
   */
