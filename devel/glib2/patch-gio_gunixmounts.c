@@ -1,41 +1,38 @@
-$NetBSD$
+$NetBSD: patch-gio_gunixmounts.c,v 1.5 2019/06/06 11:05:12 adam Exp $
 
---- gio/gunixmounts.c.orig	2014-06-02 05:10:30.186908672 +0000
+SunOS has sys/mntent.h but no mnt_opts.
+XXX who else uses the sys/mntent.h case?
+https://gitlab.gnome.org/GNOME/glib/merge_requests/890
+
+--- gio/gunixmounts.c.orig	2020-11-24 14:09:34.990380032 +0000
 +++ gio/gunixmounts.c
-@@ -733,6 +733,21 @@ _g_get_unix_mounts (void)
+@@ -955,7 +955,18 @@ _g_get_unix_mounts (void)
  
    return return_list;
  }
-+#elif defined(G_PLATFORM_HAIKU)
-+
++#elif defined(__HAIKU__)
 +static char *
 +get_mtab_monitor_file (void)
 +{
-+return NULL;
++  return NULL;
 +}
-+
+ 
 +static GList *
 +_g_get_unix_mounts (void)
 +{
-+/* TODO: implement me */
-+  GList *return_list = NULL;
-+  return return_list;
++  return NULL;
 +}
+ /* Common code {{{2 */
  #else
  #error No _g_get_unix_mounts() implementation for system
- #endif
-@@ -1129,6 +1144,14 @@ _g_get_unix_mount_points (void)
- {
-   return _g_get_unix_mounts ();
+@@ -1471,8 +1482,8 @@ _g_get_unix_mount_points (void)
+   
+   return g_list_reverse (return_list);
  }
-+#elif defined(G_PLATFORM_HAIKU)
-+
-+static GList *
-+_g_get_unix_mount_points (void)
-+{
-+  GList *return_list = NULL;
-+  return return_list;
-+}
- #else
- #error No g_get_mount_table() implementation for system
- #endif
+-/* Interix {{{2 */
+-#elif defined(__INTERIX)
++/* Interix, Haiku {{{2 */
++#elif defined(__INTERIX) || defined(__HAIKU__)
+ static GList *
+ _g_get_unix_mount_points (void)
+ {

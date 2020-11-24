@@ -1,0 +1,28 @@
+$NetBSD: patch-gio_meson.build,v 1.7 2019/11/14 11:40:30 wiz Exp $
+
+Disable inotify on SunOS.
+
+--- gio/meson.build.orig	2020-09-10 10:42:41.546570240 +0000
++++ gio/meson.build
+@@ -16,10 +16,12 @@ if host_system != 'windows' and not host
+   # Don't check for C_IN on Android since it does not define it in public
+   # headers, we define it ourselves wherever necessary
+   if not cc.compiles('''#include <sys/types.h>
++                        #include <stdint.h>
+                         #include <arpa/nameser.h>
+                         int qclass = C_IN;''',
+                      name : 'C_IN in public headers (no arpa/nameser_compat.h needed)')
+     if cc.compiles('''#include <sys/types.h>
++                      #include <stdint.h>
+                       #include <arpa/nameser.h>
+                       #include <arpa/nameser_compat.h>
+                       int qclass = C_IN;''',
+@@ -741,7 +743,7 @@ gioenumtypes_c = custom_target('gioenumt
+ gioenumtypes_dep = declare_dependency(sources : [gioenumtypes_h, glib_enumtypes_h])
+ 
+ # inotify
+-if glib_conf.has('HAVE_SYS_INOTIFY_H') and have_func_inotify_init1
++if glib_conf.has('HAVE_SYS_INOTIFY_H') and have_func_inotify_init1 and host_system != 'sunos'
+   subdir('inotify')
+   internal_deps += [ inotify_lib ]
+   internal_objects += [inotify_lib.extract_all_objects()]
