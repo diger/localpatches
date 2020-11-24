@@ -1,0 +1,46 @@
+--- configure.orig	2020-11-24 10:05:29.733216768 +0000
++++ configure	2020-11-24 10:45:24.561250304 +0000
+@@ -5933,6 +5933,16 @@
+ 	      PY3LIBRARY=libpython3.so
+ 	  fi
+ 	  ;;
++	 Haiku*)
++	  LDLIBRARY='libpython$(LDVERSION).so'
++	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
++	  RUNSHARED=LIBRARY_PATH=`pwd`${LIBRARY_PATH:+:${LIBRARY_PATH}}
++	  INSTSONAME="$LDLIBRARY".$SOVERSION
++	  if test "$with_pydebug" != yes
++          then
++	      PY3LIBRARY=libpython3.so
++	  fi
++	  ;;
+     hp*|HP*)
+ 	  case `uname -m` in
+ 		ia64)
+@@ -9417,7 +9427,7 @@
+ 			BLDSHARED="$LDSHARED"
+ 		fi
+ 		;;
+-	Linux*|GNU*|QNX*)
++	Linux*|GNU*|QNX*|Haiku*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -9489,7 +9499,7 @@
+ 		 else CCSHARED="+z";
+ 		 fi;;
+ 	Linux-android*) ;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Haiku*)  CCSHARED="-fPIC";;
+ 	FreeBSD*|NetBSD*|OpenBSD*|MirBSD*|DragonFly*) CCSHARED="-fPIC";;
+ 	OpenUNIX*|UnixWare*)
+ 		if test "$GCC" = "yes"
+@@ -9517,7 +9527,7 @@
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Haiku*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
