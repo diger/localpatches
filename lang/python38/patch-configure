@@ -1,0 +1,61 @@
+$NetBSD: patch-configure,v 1.4 2020/05/15 08:24:50 adam Exp $
+
+Use gnu99 instead of c99 to avoid "alloca() undefined" problems.
+Fix linking on Darwin; don't use -stack_size.
+Changes for consistency across pkgsrc platforms.
+Simplify _sysconfigdata to include only platform name.
+
+--- configure.orig	2020-11-23 23:56:20.089915392 +0000
++++ configure
+@@ -5919,6 +5919,16 @@ $as_echo "#define Py_ENABLE_SHARED 1" >>
+ 	      PY3LIBRARY=libpython3.so
+ 	  fi
+ 	  ;;
++	 Haiku*)
++	  LDLIBRARY='libpython$(LDVERSION).so'
++	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
++	  RUNSHARED=LIBRARY_PATH=`pwd`${LIBRARY_PATH:+:${LIBRARY_PATH}}
++	  INSTSONAME="$LDLIBRARY".$SOVERSION
++	  if test "$with_pydebug" != yes
++          then
++	      PY3LIBRARY=libpython3.so
++	  fi
++	  ;;
+     hp*|HP*)
+ 	  case `uname -m` in
+ 		ia64)
+@@ -6326,6 +6336,7 @@ $as_echo "$MKDIR_P" >&6; }
+ 
+ if test -z "$LN" ; then
+ 	case $ac_sys_system in
++		Haiku*) LN="ln -s";;
+ 		CYGWIN*) LN="ln -s";;
+ 		*) LN=ln;;
+ 	esac
+@@ -9427,7 +9438,7 @@ then
+ 			BLDSHARED="$LDSHARED"
+ 		fi
+ 		;;
+-	Linux*|GNU*|QNX*|VxWorks*)
++	Linux*|GNU*|QNX*|VxWorks*|Haiku*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -9496,7 +9507,7 @@ then
+ 		 else CCSHARED="+z";
+ 		 fi;;
+ 	Linux-android*) ;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Haiku*) CCSHARED="-fPIC";;
+ 	FreeBSD*|NetBSD*|OpenBSD*|DragonFly*) CCSHARED="-fPIC";;
+ 	OpenUNIX*|UnixWare*)
+ 		if test "$GCC" = "yes"
+@@ -9526,7 +9537,7 @@ then
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Haiku*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"

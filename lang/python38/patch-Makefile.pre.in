@@ -1,0 +1,18 @@
+$NetBSD: patch-Makefile.pre.in,v 1.1 2019/10/15 16:50:11 adam Exp $
+
+Use only one optimisation level; needed for PLIST and setuptools compatibility.
+Do not build/install libpython3.so.
+Simplify _sysconfigdata to include only platform name.
+Swap targets libinstall and libainstall, to byte-compile python-config.py.
+
+--- Makefile.pre.in.orig	2020-11-24 08:16:57.733216768 +0000
++++ Makefile.pre.in
+@@ -619,7 +619,7 @@ $(LIBRARY): $(LIBRARY_OBJS)
+ libpython$(LDVERSION).so: $(LIBRARY_OBJS) $(DTRACE_OBJS)
+ 	if test $(INSTSONAME) != $(LDLIBRARY); then \
+ 		$(BLDSHARED) -Wl,-h$(INSTSONAME) -o $(INSTSONAME) $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM); \
+-		$(LN) -f $(INSTSONAME) $@; \
++		$(LN) -fs $(INSTSONAME) $@; \
+ 	else \
+ 		$(BLDSHARED) -o $@ $(LIBRARY_OBJS) $(MODLIBS) $(SHLIBS) $(LIBC) $(LIBM); \
+ 	fi
