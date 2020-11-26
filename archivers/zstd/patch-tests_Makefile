@@ -1,0 +1,13 @@
+$NetBSD$
+
+--- tests/Makefile.orig	2020-05-22 05:04:00.620232704 +0000
++++ tests/Makefile
+@@ -67,7 +67,7 @@ MULTITHREAD_LD  =
+ else
+ EXT =
+ MULTITHREAD_CPP = -DZSTD_MULTITHREAD
+-MULTITHREAD_LD  = -pthread
++MULTITHREAD_LD  =
+ endif
+ MULTITHREAD = $(MULTITHREAD_CPP) $(MULTITHREAD_LD)
+ 
