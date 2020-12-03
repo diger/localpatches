@@ -1,0 +1,15 @@
+$NetBSD: patch-gir_meson.build,v 1.2 2020/03/11 10:09:36 wiz Exp $
+
+gircompiler requires libraries from the build area.
+
+--- gir/meson.build.orig	2020-11-26 14:11:46.620232704 +0000
++++ gir/meson.build
+@@ -436,7 +436,7 @@ typelibs = []
+ if get_option('gi_cross_binary_wrapper') != ''
+     gircompiler_command = [get_option('gi_cross_binary_wrapper'), gircompiler.full_path(), ]
+ else
+-    gircompiler_command = ['env', 'LD_LIBRARY_PATH=' + meson.current_build_dir() + '/../girepository', gircompiler ]
++    gircompiler_command = ['env', 'LIBRARY_PATH=' + meson.current_build_dir() + '/../girepository' + ':/boot/system/lib', gircompiler ]
+ endif
+ 
+ gircompiler_command += [ '-o', '@OUTPUT@', '@INPUT@',
