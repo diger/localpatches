@@ -1,8 +1,10 @@
-$NetBSD$
+$NetBSD: patch-bootstrap,v 1.3 2019/11/27 22:32:27 adam Exp $
 
---- bootstrap.orig	2014-07-31 15:03:58.051642368 +0000
+Use external libuv; the one included with cmake makes building fail.
+
+--- bootstrap.orig	2020-12-07 15:43:40.025952256 +0000
 +++ bootstrap
-@@ -187,8 +187,6 @@ if ${cmake_system_mingw}; then
+@@ -220,8 +220,6 @@ if ${cmake_system_mingw}; then
    else
      cmake_default_prefix="c:/Program Files/CMake"
    fi

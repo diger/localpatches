@@ -1,37 +1,33 @@
 $NetBSD$
 
---- Source/cmLocalGenerator.cxx.orig	2014-07-31 15:03:57.052953088 +0000
+--- Source/cmLocalGenerator.cxx.orig	2020-10-06 12:28:17.918028288 +0000
 +++ Source/cmLocalGenerator.cxx
-@@ -36,11 +36,6 @@
- 
- #include <assert.h>
+@@ -54,11 +54,6 @@
+ #  include "cmCryptoHash.h"
+ #endif
  
 -#if defined(__HAIKU__)
--#include <FindDirectory.h>
--#include <StorageDefs.h>
+-#  include <FindDirectory.h>
+-#  include <StorageDefs.h>
 -#endif
 -
- cmLocalGenerator::cmLocalGenerator()
- {
-   this->Makefile = 0; // moved to after set on global
-@@ -357,20 +352,6 @@ void cmLocalGenerator::GenerateInstallRu
-       }
-     prefix = prefix_win32.c_str();
+ // List of variables that are replaced when
+ // rules are expanced.  These variables are
+ // replaced in the form <var> with GetSafeDefinition(var).
+@@ -441,16 +436,6 @@ void cmLocalGenerator::GenerateInstallRu
      }
+     prefix = prefix_win32.c_str();
+   }
 -#elif defined(__HAIKU__)
 -  char dir[B_PATH_NAME_LENGTH];
--  if (!prefix)
--    {
--    if (find_directory(B_SYSTEM_DIRECTORY, -1, false, dir, sizeof(dir))
--        == B_OK)
--      {
+-  if (!prefix) {
+-    if (find_directory(B_SYSTEM_DIRECTORY, -1, false, dir, sizeof(dir)) ==
+-        B_OK) {
 -      prefix = dir;
--      }
--    else
--      {
+-    } else {
 -      prefix = "/boot/system";
--      }
 -    }
+-  }
  #else
-   if (!prefix)
-     {
+   if (!prefix) {
+     prefix = "/usr/local";

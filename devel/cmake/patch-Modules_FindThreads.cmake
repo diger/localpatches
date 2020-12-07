@@ -1,16 +1,16 @@
 $NetBSD$
 
---- Modules/FindThreads.cmake.orig	2014-01-16 17:15:08.000000000 +0000
+--- Modules/FindThreads.cmake.orig	2020-10-06 12:28:17.918028288 +0000
 +++ Modules/FindThreads.cmake
-@@ -130,6 +130,11 @@ if(CMAKE_SYSTEM MATCHES "Windows")
+@@ -197,6 +197,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
    set(Threads_FOUND TRUE)
  endif()
  
-+IF(HAIKU)
++if(HAIKU)
 +  SET (CMAKE_THREAD_LIBS_INIT "-lroot")
 +  SET(Threads_FOUND TRUE)
-+ENDIF(HAIKU)
++endif()
 +
  if(CMAKE_USE_PTHREADS_INIT)
-   if(CMAKE_SYSTEM MATCHES "HP-UX-*")
+   if(CMAKE_SYSTEM_NAME MATCHES "HP-UX")
      # Use libcma if it exists and can be used.  It provides more
