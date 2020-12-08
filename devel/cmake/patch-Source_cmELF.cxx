@@ -2,7 +2,7 @@ $NetBSD$
 
 --- Source/cmELF.cxx.orig	2020-10-06 12:28:17.918028288 +0000
 +++ Source/cmELF.cxx
-@@ -20,17 +20,17 @@
+@@ -20,17 +20,18 @@
  // Include the ELF format information system header.
  #if defined(__OpenBSD__)
  #  include <elf_abi.h>
@@ -14,25 +14,28 @@ $NetBSD$
 -using Elf32_Sym = struct Elf32_Sym;
 -using Elf32_Rel = struct Elf32_Rel;
 -using Elf32_Rela = struct Elf32_Rela;
+-#  define ELFMAG0 0x7F
 +#else
 +#  include <elf.h>
 +# ifndef ELFMAG0
- #  define ELFMAG0 0x7F
++ #  define ELFMAG0 0x7F
 +# endif
 +# ifndef ELFMAG1
  #  define ELFMAG1 'E'
--#  define ELFMAG2 'L'
++# endif
 +# ifndef ELFMAG2
-+ #  define ELFMAG2 'L'
+ #  define ELFMAG2 'L'
 +# endif
 +# ifndef ELFMAG3
  #  define ELFMAG3 'F'
  #  define ET_NONE 0
  #  define ET_REL 1
-@@ -42,6 +42,7 @@ using Elf32_Rela = struct Elf32_Rela;
+@@ -40,8 +41,7 @@ using Elf32_Rela = struct Elf32_Rela;
+ #  define EM_386 3
+ #  define EM_SPARC 2
  #  define EM_PPC 20
- #else
- #  include <elf.h>
+-#else
+-#  include <elf.h>
 +# endif
  #endif
  #if defined(__sun)
