@@ -1,6 +1,6 @@
 $NetBSD$
 
---- plugins/kdb/db2/libdb2/include/db.hin.orig	2014-05-30 07:59:03.809500672 +0000
+--- plugins/kdb/db2/libdb2/include/db.hin.orig	2020-12-10 09:20:53.125042688 +0000
 +++ plugins/kdb/db2/libdb2/include/db.hin
 @@ -40,6 +40,10 @@
  

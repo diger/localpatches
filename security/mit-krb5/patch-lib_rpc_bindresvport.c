@@ -1,12 +1,14 @@
 $NetBSD$
 
---- lib/rpc/bindresvport.c.orig	2013-11-06 20:52:23.000000000 +0000
+--- lib/rpc/bindresvport.c.orig	2020-12-10 09:08:47.421527552 +0000
 +++ lib/rpc/bindresvport.c
-@@ -35,7 +35,9 @@
- #include <string.h>
+@@ -37,7 +37,11 @@
+ #include <stdint.h>
  #include <unistd.h>
  #include <sys/types.h>
-+#if !defined(__HAIKU__)
++#ifdef __HAIKU__
++#include <errno.h>
++#else
  #include <sys/errno.h>
 +#endif
  #include <sys/socket.h>
