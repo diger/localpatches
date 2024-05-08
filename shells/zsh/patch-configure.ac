@@ -1,0 +1,26 @@
+$NetBSD: patch-configure.ac,v 1.11 2024/03/31 22:08:43 js Exp $
+
+Fix SunOS flags.
+
+#include <time.h> for struct timespec, as per POSIX (fixes QNX).
+
+--- configure.ac.orig	2024-05-07 05:24:00.018612224 +0000
++++ configure.ac
+@@ -894,6 +894,7 @@ fi
+ 
+ if test "x$dynamic" = xyes; then
+   AC_CHECK_LIB(dl, dlopen)
++  AC_CHECK_LIB(root, dlopen)
+ fi
+ 
+ if test x$enable_cap = xyes; then
+@@ -2848,7 +2849,8 @@ char *argv[];
+     aix*)         DLLDFLAGS="${DLLDFLAGS=-G -bexpall -lc}" ;;
+     solaris*|sysv4*|esix*) DLLDFLAGS="${DLLDFLAGS=-shared}" ;;
+     darwin*)      DLLDFLAGS="${DLLDFLAGS=-bundle -flat_namespace -undefined suppress}" ;;
+-    beos*|haiku*) DLLDFLAGS="${DLLDFLAGS=-nostart}" ;;
++    beos*) DLLDFLAGS="${DLLDFLAGS=-nostart}" ;;
++    haiku*) DLLDFLAGS="${DLLDFLAGS=-shared}" ;;
+     openbsd*)
+       if test x$zsh_cv_sys_elf = xyes; then
+ 	DLLDFLAGS="${DLLDFLAGS=-shared -fPIC}"
