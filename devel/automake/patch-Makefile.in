@@ -1,0 +1,19 @@
+egrep: warning: egrep is obsolescent; using grep -E
+$NetBSD$
+
+--- Makefile.in.orig	2021-10-04 03:07:25.056623104 +0000
++++ Makefile.in
+@@ -3721,11 +3721,11 @@ bin/automake bin/aclocal: Makefile
+ 
+ bin/aclocal-$(APIVERSION): bin/aclocal
+ 	$(AM_V_GEN) rm -f $@; \
+-	$(LN) bin/aclocal $@
++	$(LN) ../bin/aclocal $@
+ 
+ bin/automake-$(APIVERSION): bin/automake
+ 	$(AM_V_GEN) rm -f $@; \
+-	$(LN) bin/automake $@
++	$(LN) ../bin/automake $@
+ 
+ # vim: ft=automake noet
+ 
