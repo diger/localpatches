@@ -1,0 +1,13 @@
+$NetBSD: patch-aa,v 1.16 2010/06/02 12:06:22 adam Exp $
+
+--- dist/Makefile.in.orig	2024-05-14 05:39:46.053477376 +0000
++++ dist/Makefile.in
+@@ -998,7 +998,7 @@ install_docs:
+ 	    ($(MKDIR) -p $(DESTDIR)$(docdir) && \
+ 	    $(CHMOD) $(dmode) $(DESTDIR)$(docdir))
+ 	@cd $(DESTDIR)$(docdir) && $(RM) -r $(DOCLIST)
+-	@cd $(srcdir)/docs && pax -rwpp $(DOCLIST) $(DESTDIR)$(docdir)/
++	@cd $(srcdir)/docs && $(CP) -pr $(DOCLIST) $(DESTDIR)$(docdir)/
+ 
+ uninstall_docs:
+ 	@cd $(DESTDIR)$(docdir) && $(RM) -r $(DOCLIST)
