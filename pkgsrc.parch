@@ -1,0 +1,199 @@
+diff --git a/mk/pkgformat/pkg/package.mk b/mk/pkgformat/pkg/package.mk
+index 9db61cad6c60..5583a02312a2 100644
+--- a/mk/pkgformat/pkg/package.mk
++++ b/mk/pkgformat/pkg/package.mk
+@@ -70,7 +70,6 @@ ${PKGFILE}: ${STAGE_PKGFILE}
+ 	${RUN}								\
+ 	${STEP_MSG} "Creating binary package ${.TARGET}";		\
+ 	${TEST} -d ${.TARGET:H} || ${MKDIR} ${.TARGET:H};		\
+-	${LN} -f ${STAGE_PKGFILE} ${PKGFILE} 2>/dev/null ||		\
+ 		${CP} -pf ${STAGE_PKGFILE} ${PKGFILE} 2>/dev/null ||	\
+ 		${CP} -f ${STAGE_PKGFILE} ${PKGFILE}
+ .endif
+diff --git a/mk/platform/Haiku.mk b/mk/platform/Haiku.mk
+index 74d617e895a2..f923b7c2e5cd 100644
+--- a/mk/platform/Haiku.mk
++++ b/mk/platform/Haiku.mk
+@@ -38,12 +38,6 @@ _OPSYS_SYSTEM_RPATH?=	/boot/system/lib
+ _OPSYS_LIB_DIRS?=	/boot/system/develop/lib /boot/system/lib
+ _OPSYS_INCLUDE_DIRS?=	/boot/system/develop/headers \
+ 			/boot/system/develop/headers/posix
+-.else
+-_OPSYS_SYSTEM_RPATH?=	/boot/common/lib:/boot/system/lib
+-_OPSYS_LIB_DIRS?=	/boot/common/lib /boot/system/lib
+-_OPSYS_INCLUDE_DIRS?=	/boot/common/include \
+-			/boot/develop/headers/posix \
+-			/boot/develop/headers/3rdparty
+ .endif
+ 
+ _OPSYS_HAS_INET6=	yes	# IPv6 is standard
+@@ -67,6 +61,9 @@ TOOLS_ARGS.ln=			-s
+ 
+ _OPSYS_SUPPORTS_CWRAPPERS=	yes
+ 
++.if defined(GNU_CONFIGURE)
++CONFIGURE_ENV+=		ac_cv_func_readpassphrase=yes
++.endif
+ # check for maximum command line length and set it in configure's environment,
+ # to avoid a test required by the libtool script that takes forever.
+ # FIXME: Adjust to work on this system and enable the lines below.
+diff --git a/mk/tools/tools.Haiku.mk b/mk/tools/tools.Haiku.mk
+index 0bca51421dc4..a99edcc50178 100644
+--- a/mk/tools/tools.Haiku.mk
++++ b/mk/tools/tools.Haiku.mk
+@@ -9,16 +9,10 @@ TOOLS_PLATFORM.bash?=		/bin/bash
+ .if exists(/bin/bison)
+ TOOLS_PLATFORM.bison?=		/bin/bison
+ TOOLS_PLATFORM.bison-yacc?=	/bin/bison -y
+-.elif exists(/boot/common/bin/bison)
+-TOOLS_PLATFORM.bison?=		/boot/common/bin/bison
+-TOOLS_PLATFORM.bison-yacc?=	/boot/common/bin/bison -y
+ .endif
+ .if exists(/bin/bzip2)
+ TOOLS_PLATFORM.bzcat?=		/bin/bzip2 -cd
+ TOOLS_PLATFORM.bzip2?=		/bin/bzip2
+-.elif exists(/boot/common/bin/bzip2)
+-TOOLS_PLATFORM.bzcat?=		/boot/common/bin/bzip2 -cd
+-TOOLS_PLATFORM.bzip2?=		/boot/common/bin/bzip2
+ .endif
+ TOOLS_PLATFORM.cat?=		/bin/cat
+ TOOLS_PLATFORM.chgrp?=		/bin/chgrp
+@@ -29,31 +23,25 @@ TOOLS_PLATFORM.cp?=		/bin/cp
+ TOOLS_PLATFORM.cut?=		/bin/cut
+ .if exists(/bin/curl)
+ TOOLS_PLATFORM.curl?=		/bin/curl
+-.elif exists(/boot/common/bin/curl)
+-TOOLS_PLATFORM.curl?=		/boot/common/bin/curl
+ .endif
+ TOOLS_PLATFORM.date?=		/bin/date
+ TOOLS_PLATFORM.diff?=		/bin/diff
+ TOOLS_PLATFORM.diff3?=		/bin/diff3
+ TOOLS_PLATFORM.dirname?=	/bin/dirname
+ TOOLS_PLATFORM.echo?=		echo			# shell builtin
+-TOOLS_PLATFORM.egrep?=		/bin/egrep
++TOOLS_PLATFORM.egrep?=		/bin/grep -E
+ TOOLS_PLATFORM.env?=		/bin/env
+ TOOLS_PLATFORM.expr?=		/bin/expr
+ TOOLS_PLATFORM.false?=		false			# shell builtin
+ TOOLS_PLATFORM.fgrep?=		/bin/fgrep
+ TOOLS_PLATFORM.find?=		/bin/find
+-TOOLS_PLATFORM.ftp?=		/bin/ftp
++#TOOLS_PLATFORM.ftp?=		/bin/ftp
+ TOOLS_PLATFORM.gawk?=		/bin/gawk
+ .if exists(/bin/m4)
+ TOOLS_PLATFORM.gm4?=		/bin/m4
+-.elif exists(/boot/common/bin/m4)
+-TOOLS_PLATFORM.gm4?=		/boot/common/bin/m4
+ .endif
+ .if exists(/bin/make)
+ TOOLS_PLATFORM.gmake?=		/bin/make
+-.elif exists(/boot/common/bin/make)
+-TOOLS_PLATFORM.gmake?=		/boot/common/bin/make
+ .endif
+ TOOLS_PLATFORM.grep?=		/bin/grep
+ .if exists(/bin/groff)
+@@ -61,60 +49,44 @@ TOOLS_PLATFORM.groff?=		/bin/groff
+ .endif
+ .if exists(/bin/sed)
+ TOOLS_PLATFORM.gsed?=		/bin/sed
+-.elif exists(/boot/common/bin/sed)
+-TOOLS_PLATFORM.gsed?=		/boot/common/bin/sed
+ .endif
+ .if exists(/bin/soelim)
+ TOOLS_PLATFORM.gsoelim?=	/bin/soelim
+ .endif
+-.if exists(/bin/tar)
+ TOOLS_PLATFORM.gtar?=		/bin/tar
+-.elif exists(/boot/common/bin/tar)
+-TOOLS_PLATFORM.gtar?=		/boot/common/bin/tar
+-.endif
+ TOOLS_PLATFORM.gunzip?=		/bin/gunzip -f
+ TOOLS_PLATFORM.gzcat?=		/bin/zcat
+ TOOLS_PLATFORM.gzip?=		/bin/gzip -nf ${GZIP}
+ TOOLS_PLATFORM.head?=		/bin/head
+ TOOLS_PLATFORM.hostname?=	/bin/hostname
+-TOOLS_PLATFORM.id?=		/bin/id
++TOOLS_PLATFORM.id?=			/bin/id
+ TOOLS_PLATFORM.ident?=		/bin/ident
+ TOOLS_PLATFORM.install?=	/bin/install
+ .if exists(/bin/install-info)
+ TOOLS_PLATFORM.install-info?=	/bin/install-info
+-.elif exists(/boot/common/bin/install-info)
+-TOOLS_PLATFORM.install-info?=	/boot/common/bin/install-info
+ .endif
+-#TOOLS_PLATFORM.ldconfig?=	/sbin/ldconfig
+ # XXX: BFS currently no support of hard link.
+ TOOLS_PLATFORM.ln?=		/bin/ln
+ TOOLS_PLATFORM.ls?=		/bin/ls
+ .if exists(/bin/lzcat)
+ TOOLS_PLATFORM.lzcat?=		/bin/lzcat
+-.elif exists(/boot/common/bin/lzcat)
+-TOOLS_PLATFORM.lzcat?=		/boot/common/bin/lzcat
+ .endif
+ TOOLS_PLATFORM.m4?=		${TOOLS_PLATFORM.gm4}
+ #TOOLS_PLATFORM.mail?=		/bin/mail
+ .if exists(/bin/makeinfo)
+ TOOLS_PLATFORM.makeinfo?=	/bin/makeinfo
+-.elif exists(/boot/common/bin/makeinfo)
+-TOOLS_PLATFORM.makeinfo?=	/boot/common/bin/makeinfo
+ .endif
+ TOOLS_PLATFORM.mkdir?=		/bin/mkdir -p
+ .if exists(/bin/mktemp)
+ TOOLS_PLATFORM.mktemp?=		/bin/mktemp
+ .endif
+-#TOOLS_PLATFORM.msgfmt?=		/usr/bin/msgfmt
+ TOOLS_PLATFORM.mv?=		/bin/mv
+-#TOOLS_PLATFORM.nice?=		/bin/nice
++TOOLS_PLATFORM.nice?=		/bin/nice
+ .if exists(/bin/nroff)
+ TOOLS_PLATFORM.nroff?=		/bin/nroff
+ .endif
+ .if exists(/bin/openssl)
+ TOOLS_PLATFORM.openssl?=	/bin/openssl
+-.elif exists(/boot/common/bin/openssl)
+-TOOLS_PLATFORM.openssl?=	/boot/common/bin/openssl
+ .endif
+ # Don't use GNU patch
+ #TOOLS_PLATFORM.patch?=		/bin/patch
+@@ -135,8 +107,6 @@ TOOLS_PLATFORM.soelim?=		/bin/soelim
+ TOOLS_PLATFORM.sort?=		/bin/sort
+ .if exists(/bin/strip)
+ TOOLS_PLATFORM.strip?=		/bin/strip
+-.else
+-TOOLS_PLATFORM.strip?=		/boot/develop/tools/gnupro/bin/strip
+ .endif
+ TOOLS_PLATFORM.tail?=		/bin/tail
+ TOOLS_PLATFORM.tar?=		${TOOLS_PLATFORM.gtar}
+@@ -151,18 +121,14 @@ TOOLS_PLATFORM.true?=		true			# shell builtin
+ TOOLS_PLATFORM.tsort?=		/bin/tsort
+ TOOLS_PLATFORM.uniq?=		/bin/uniq
+ TOOLS_PLATFORM.unzip?=		/bin/unzip
+-TOOLS_PLATFORM.wc?=		/bin/wc
++TOOLS_PLATFORM.wc?=			/bin/wc
+ TOOLS_PLATFORM.wget?=		/bin/wget
+ TOOLS_PLATFORM.xargs?=		/bin/xargs -r
+ #TOOLS_PLATFORM.xgettext?=	/usr/bin/xgettext
+ .if exists(/bin/xz)
+ TOOLS_PLATFORM.xz?=		/bin/xz
+-.elif exists(/boot/common/bin/xz)
+-TOOLS_PLATFORM.xz?=		/boot/common/bin/xz
+ .endif
+ .if exists(/bin/xzcat)
+ TOOLS_PLATFORM.xzcat?=		/bin/xzcat
+-.elif exists(/boot/common/bin/xzcat)
+-TOOLS_PLATFORM.xzcat?=		/boot/common/bin/xzcat
+ .endif
+ TOOLS_PLATFORM.zip?=		/bin/zip
+diff --git a/pkgtools/pkgdiff/Makefile b/pkgtools/pkgdiff/Makefile
+index a5bbb0e4411e..23b0b3a99f37 100644
+--- a/pkgtools/pkgdiff/Makefile
++++ b/pkgtools/pkgdiff/Makefile
+@@ -50,6 +50,8 @@ do-build:
+ .endfor
+ 	${SED} -e 's|@DIFF@|${PKGDIFF_DIFF}|g'		\
+ 		-e 's|@SH@|${SH}|g'			\
++		-e 's|egrep|${EGREP}|g'		\
++		-e 's|'NetBSD'|'${OPSYS}'|g'		\
+ 		< ${FILESDIR}/pkgdiff			\
+ 		> ${WRKSRC}/pkgdiff
+ 	${CP} ${FILESDIR}/pkgvi ${WRKSRC}
