@@ -1,0 +1,13 @@
+egrep: warning: egrep is obsolescent; using grep -E
+$NetBSD$
+
+--- auto/sources.orig	2023-04-11 01:45:34.051118080 +0000
++++ auto/sources
+@@ -209,6 +209,7 @@ DARWIN_DEPS="src/os/unix/ngx_darwin_conf
+ DARWIN_SRCS=src/os/unix/ngx_darwin_init.c
+ DARWIN_SENDFILE_SRCS=src/os/unix/ngx_darwin_sendfile_chain.c
+ 
++HAIKU_SRCS=src/os/unix/ngx_haiku_errno.c
+ 
+ WIN32_INCS="$CORE_INCS $EVENT_INCS src/os/win32"
+ 

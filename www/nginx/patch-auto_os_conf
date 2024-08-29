@@ -1,0 +1,21 @@
+egrep: warning: egrep is obsolescent; using grep -E
+$NetBSD$
+
+--- auto/os/conf.orig	2024-05-08 09:27:52.531628032 +0000
++++ auto/os/conf
+@@ -76,6 +76,15 @@ case "$NGX_PLATFORM" in
+         CORE_SRCS="$UNIX_SRCS"
+         CC_AUX_FLAGS="$CC_AUX_FLAGS -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64"
+     ;;
++    
++    Haiku*)
++        # Haiku
++        have=NGX_HAIKU . auto/have_headers
++        CORE_INCS="$UNIX_INCS"
++        CORE_DEPS="$UNIX_DEPS $POSIX_DEPS"
++        CORE_SRCS="$UNIX_SRCS $HAIKU_SRCS"
++        CORE_LIBS="$CORE_LIBS -lnetwork"
++    ;;
+ 
+     *)
+         CORE_INCS="$UNIX_INCS"

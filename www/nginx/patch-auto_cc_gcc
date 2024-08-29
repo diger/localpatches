@@ -1,0 +1,14 @@
+egrep: warning: egrep is obsolescent; using grep -E
+$NetBSD$
+
+--- auto/cc/gcc.orig	2023-04-11 01:45:34.056623104 +0000
++++ auto/cc/gcc
+@@ -140,7 +140,7 @@ fi
+ # -W requires at least -O
+ CFLAGS="$CFLAGS ${NGX_GCC_OPT:--O} -W"
+ 
+-CFLAGS="$CFLAGS -Wall -Wpointer-arith"
++CFLAGS="$CFLAGS -Wall -Wpointer-arith -Wno-unused-but-set-variable"
+ #CFLAGS="$CFLAGS -Wconversion"
+ #CFLAGS="$CFLAGS -Winline"
+ #CFLAGS="$CFLAGS -Wmissing-prototypes"

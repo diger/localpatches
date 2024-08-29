@@ -1,0 +1,24 @@
+egrep: warning: egrep is obsolescent; using grep -E
+$NetBSD$
+
+--- auto/unix.orig	2023-04-11 01:45:34.051642368 +0000
++++ auto/unix
+@@ -278,6 +278,18 @@ if [ $ngx_found = no ]; then
+ fi
+ 
+ 
++ngx_feature="setpriority()"
++ngx_feature_name="NGX_HAVE_SETPRIORITY"
++ngx_feature_run=no
++ngx_feature_incs="#include <unistd.h>
++                  #include <sys/types.h>
++                  #include <sys/resource.h>"
++ngx_feature_path=
++ngx_feature_libs=
++ngx_feature_test="setpriority(PRIO_PROCESS, getpid(), 0)"
++. auto/feature
++
++
+ ngx_feature="sched_yield()"
+ ngx_feature_name="NGX_HAVE_SCHED_YIELD"
+ ngx_feature_run=no
