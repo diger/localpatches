@@ -1,3 +1,28 @@
+diff --git a/archivers/libarchive/files/configure b/archivers/libarchive/files/configure
+index 092c610a06d8..99e08e72be20 100755
+--- a/archivers/libarchive/files/configure
++++ b/archivers/libarchive/files/configure
+@@ -10954,6 +10954,7 @@ _LT_EOF
+     haiku*)
+       archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags $wl-soname $wl$soname -o $lib'
+       link_all_deplibs=yes
++      ac_cv_func_readpassphrase=yes
+       ;;
+ 
+     os2*)
+diff --git a/lang/python312/Makefile b/lang/python312/Makefile
+index 3c7e344a5b95..5ea354b43be9 100644
+--- a/lang/python312/Makefile
++++ b/lang/python312/Makefile
+@@ -234,7 +234,7 @@ setuptools-preinstall:
+ 	${INSTALL_DATA} ${.CURDIR}/../../devel/py-setuptools/files/_distutils_system_mod \
+ 		${DESTDIR}${PREFIX}/lib/python${PY_VER_SUFFIX}/site-packages/_distutils_system_mod.py
+ 
+-.if ${OPSYS} == "Linux"
++.if ${OPSYS} == "Linux" || ${OPSYS} == "Haiku"
+ .include "../../databases/gdbm_compat/buildlink3.mk"
+ .endif
+ .include "../../archivers/bzip2/buildlink3.mk"
 diff --git a/mk/pkgformat/pkg/package.mk b/mk/pkgformat/pkg/package.mk
 index 9db61cad6c60..5583a02312a2 100644
 --- a/mk/pkgformat/pkg/package.mk
@@ -11,7 +36,7 @@ index 9db61cad6c60..5583a02312a2 100644
  		${CP} -f ${STAGE_PKGFILE} ${PKGFILE}
  .endif
 diff --git a/mk/platform/Haiku.mk b/mk/platform/Haiku.mk
-index 74d617e895a2..f923b7c2e5cd 100644
+index 74d617e895a2..c64522c2d536 100644
 --- a/mk/platform/Haiku.mk
 +++ b/mk/platform/Haiku.mk
 @@ -38,12 +38,6 @@ _OPSYS_SYSTEM_RPATH?=	/boot/system/lib
@@ -27,16 +52,6 @@ index 74d617e895a2..f923b7c2e5cd 100644
  .endif
  
  _OPSYS_HAS_INET6=	yes	# IPv6 is standard
-@@ -67,6 +61,9 @@ TOOLS_ARGS.ln=			-s
- 
- _OPSYS_SUPPORTS_CWRAPPERS=	yes
- 
-+.if defined(GNU_CONFIGURE)
-+CONFIGURE_ENV+=		ac_cv_func_readpassphrase=yes
-+.endif
- # check for maximum command line length and set it in configure's environment,
- # to avoid a test required by the libtool script that takes forever.
- # FIXME: Adjust to work on this system and enable the lines below.
 diff --git a/mk/tools/tools.Haiku.mk b/mk/tools/tools.Haiku.mk
 index 0bca51421dc4..a99edcc50178 100644
 --- a/mk/tools/tools.Haiku.mk
@@ -184,16 +199,15 @@ index 0bca51421dc4..a99edcc50178 100644
 -TOOLS_PLATFORM.xzcat?=		/boot/common/bin/xzcat
  .endif
  TOOLS_PLATFORM.zip?=		/bin/zip
-diff --git a/pkgtools/pkgdiff/Makefile b/pkgtools/pkgdiff/Makefile
-index a5bbb0e4411e..23b0b3a99f37 100644
---- a/pkgtools/pkgdiff/Makefile
-+++ b/pkgtools/pkgdiff/Makefile
-@@ -50,6 +50,8 @@ do-build:
- .endfor
- 	${SED} -e 's|@DIFF@|${PKGDIFF_DIFF}|g'		\
- 		-e 's|@SH@|${SH}|g'			\
-+		-e 's|egrep|${EGREP}|g'		\
-+		-e 's|'NetBSD'|'${OPSYS}'|g'		\
- 		< ${FILESDIR}/pkgdiff			\
- 		> ${WRKSRC}/pkgdiff
- 	${CP} ${FILESDIR}/pkgvi ${WRKSRC}
+diff --git a/net/net-snmp/Makefile b/net/net-snmp/Makefile
+index 501137a8cd25..0b46688f63e0 100644
+--- a/net/net-snmp/Makefile
++++ b/net/net-snmp/Makefile
+@@ -8,6 +8,7 @@ COMMENT=	Extensible SNMP implementation
+ 
+ CONFLICTS=	ucd-snmp-[0-9]*
+ CONFLICTS+=	nocol-[0-9]*	# bin/snmpget bin/snmpwalk
++USE_TOOLS+= file
+ 
+ USE_LIBTOOL=		yes
+ GNU_CONFIGURE=		yes
